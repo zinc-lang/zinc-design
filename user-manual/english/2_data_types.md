@@ -31,7 +31,7 @@ Prefixes distinguish bases: `0o` for octal, `0x` for hexadecimal, `0b` for binar
 Integer literals allow a type suffix. Suffixes are lowercase, for example `123_i8`  `100_i`  `0x64_u`.
 Without other contextual information, an integer literal cannot be inferred to a type. Users are encouraged to add a type suffix to integer literals to make the type explicit.
 
-Integer arithmetic always uses wrapping on overflow. If you need other behavior, call the standard library. The standard library provides member functions such as `checked_add` for integers (not yet implemented).
+Integer arithmetic always uses wrapping on overflow. If you need other behavior, call the standard library. Integers provide `checked_add` / `wrapping_add` / `saturating_add` and the matching `sub`/`mul` methods.
 
 Zinc does not provide "bitwise" operators, including left shift, right shift, bitwise and, bitwise or, bitwise not, and bitwise xor.
 Instead, the standard library provides member functions on integer types for bitwise operations, such as `bit_and`, which is enough for the needed functionality.
@@ -115,7 +115,7 @@ Note: the reason we do not use Rust's `&[T]` syntax is to simplify the type syst
 In Rust, `[T]` is a legal type that can be used independently and is dyn sized. That introduces a special case in the type system and is troublesome when implementing generics. Zinc wants users to only use `&[T]/&mut [T]` types, with no standalone dyn-sized `[T]` type, and no `Box<[T]>` `Rc<[T]>` and similar types.
 Therefore the `&[T]/&mut[T]` syntax was replaced, and only `Slice/SliceMut` types are provided in the standard library. Their semantics are equivalent to forcing Rust's `[T]` to be used only together with a borrow pointer. Zinc's `Slice<'a, T>` is equivalent to Rust's `&'a [T]`.
 
-> **TODO**: The Range type is not implemented yet, but the operators are reserved, using Swift's syntax. There are two kinds of Range, half-open `..<` and closed `..=`; `RangeFull` is dropped.
+> Range is implemented: half-open `..<` is `RangeExclusive<T>`, closed `..=` is `RangeInclusive<T>`. Integer types implement `Step`, so `for i in 0_i ..< 10_i` works. `RangeFull` is dropped.
 Slicing cannot yet be done with the index operator `[]` together with a Range type, because operator overloading is not implemented yet.
 ```
 let s: Slice<Int> = &x[1..<3]; // to be supported later
@@ -139,7 +139,7 @@ Thinking in C++ terms, Zinc's `String` corresponds to C++'s `std::string`, excep
 
 String literals support escapes.
 
-todo: Support raw string literals. `r##" content "##`.
+Raw string literals are supported: `r"content"`, `r#" content "#`, `r##" content "##`. C string literals `c"..."` are also supported (typed as `Str`, with a trailing NUL byte for FFI).
 
 todo: Support string interpolation, i.e. nested expressions inside string literals. Example:
 
